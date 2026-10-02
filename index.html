@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chocolate Workhouse</title>
+    <style>
+        :root {
+            --bg-deep: #090a0d;
+            --surface: #12141a;
+            --surface-hover: #1b1e26;
+            --accent: #f59e0b;
+            --accent-glow: rgba(245, 158, 11, 0.25);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #212530;
+        }
+
+        * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 36px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 9px 14px 9px 36px;
+            background: #050608;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .search-bar:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            pointer-events: none;
+        }
+
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 30px 36px;
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 14px;
+        }
+
+        .game-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .game-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            background: var(--surface-hover);
+        }
+
+        .game-thumb {
+            width: 100%;
+            height: 90px;
+            background: #050608;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .game-info {
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .game-title {
+            font-weight: 700;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .game-cat {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        #playerContainer {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            flex: 1;
+            gap: 15px;
+            padding: 30px 36px;
+        }
+
+        .player-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface);
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .frame-box {
+            width: 100%;
+            height: 80vh;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        /* Essential iframe properties for embedding */
+        iframe { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            background: #000;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #111;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            🍫 Chocolate Workhouse
+        </div>
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-bar" id="searchBox" placeholder="Search library..." onkeyup="filterGames()">
+        </div>
+    </header>
+
+    <div class="main-container" id="arcadeContainer">
+        <div class="stats-bar">
+            <span id="libraryCount">Loading Database...</span>
+            <span>Embed-Ready Mode</span>
+        </div>
+        <div class="games-grid" id="gamesGrid"></div>
+    </div>
+
+    <div id="playerContainer">
+        <div class="player-nav">
+            <button class="btn" onclick="returnToArcade()">← Back to Library</button>
+            <div id="playingTitle" style="font-weight: 700; font-size: 0.95rem;"></div>
+            <button class="btn" onclick="toggleFullscreen()">Fullscreen</button>
+        </div>
+        <div class="frame-box" id="frameBox">
+            <!-- Added strict embedding permissions via sandbox and allow attributes -->
+            <iframe id="gameFrame" src="" allow="fullscreen; autoplay; encrypted-media; pointer-lock; gamepad" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Database structured for reliable iframe embedding
+        const gamesList = [
+            { name: "Geometry Dash (Embed)", cat: "Arcade", icon: "🟦", url: "https://scratch.mit.edu/projects/626242/embed" },
+            { name: "2048", cat: "Puzzle", icon: "🔢", url: "https://play2048.co/" },
+            { name: "Cookie Clicker", cat: "Puzzle", icon: "🍪", url: "https://orteil.dashnet.org/cookieclicker/" },
+            { name: "Minesweeper", cat: "Puzzle", icon: "💣", url: "https://minesweeperonline.com/" },
+            { name: "Wordle", cat: "Puzzle", icon: "📝", url: "https://www.nytimes.com/games/wordle/index.html" },
+            { name: "Chess", cat: "Board", icon: "♟", url: "https://www.chess.com/play/computer" },
+            { name: "Tetris", cat: "Retro", icon: "🧩", url: "https://tetris.com/play-tetris" },
+            { name: "Snake", cat: "Retro", icon: "🐍", url: "https://playsnake.org/" },
+            { name: "Flappy Bird", cat: "Arcade", icon: "🐦", url: "https://flappybird.io/" },
+            { name: "Type Racer", cat: "Educational", icon: "⌨", url: "https://play.typeracer.com/" }
+        ];
+
+        function renderGrid(filter = "") {
+            const grid = document.getElementById('gamesGrid');
+            grid.innerHTML = "";
+
+            const matches = gamesList.filter(g => g.name.toLowerCase().includes(filter) || g.cat.toLowerCase().includes(filter));
+
+            document.getElementById('libraryCount').innerText = `Catalog: ${matches.length} Modules Loaded`;
+
+            matches.forEach(game => {
+                const card = document.createElement('div');
+                card.className = "game-card";
+                card.onclick = () => launchGame(game);
+                card.innerHTML = `
+                    <div class="game-thumb">${game.icon}</div>
+                    <div class="game-info">
+                        <div class="game-title">${game.name}</div>
+                        <div class="game-cat">${game.cat}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterGames() {
+            const query = document.getElementById('searchBox').value.toLowerCase();
+            renderGrid(query);
+        }
+
+        function launchGame(game) {
+            document.getElementById('arcadeContainer').style.display = 'none';
+            document.getElementById('playerContainer').style.display = 'flex';
+            document.getElementById('playingTitle').innerText = game.name;
+            document.getElementById('gameFrame').src = game.url;
+        }
+
+        function returnToArcade() {
+            document.getElementById('playerContainer').style.display = 'none';
+            document.getElementById('arcadeContainer').style.display = 'flex';
+            document.getElementById('gameFrame').src = ""; // Clears the source to stop background audio/processes
+        }
+
+        function toggleFullscreen() {
+            const frame = document.getElementById('frameBox');
+            if (!document.fullscreenElement) {
+                frame.requestFullscreen().catch(err => alert(err.message));
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        renderGrid();
+    </script>
+</body>
+</html>
